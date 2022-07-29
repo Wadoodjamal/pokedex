@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-void storeUserSignIn(email, password) async {
+Future<bool> storeUserSignIn(email, password) async {
+  bool check = false;
+
   var user = {
     'email': email,
     'password': password,
@@ -10,7 +12,27 @@ void storeUserSignIn(email, password) async {
   final prefs = await SharedPreferences.getInstance();
   const key = 'user';
   final value = json.encode(user);
-  prefs.setString(key, value);
+  await prefs.setString(key, value).then((value) {
+    check = true;
+  });
+  return check;
+}
+
+Future<bool> storeUserSignUp(name, email, password) async {
+  bool check = false;
+
+  var user = {
+    'name': name,
+    'email': email,
+    'password': password,
+  };
+  final prefs = await SharedPreferences.getInstance();
+  const key = 'user';
+  final value = json.encode(user);
+  prefs.setString(key, value).then((value) {
+    check = true;
+  });
+  return check;
 }
 
 Future<bool> getUser() async {
@@ -23,14 +45,12 @@ Future<bool> getUser() async {
   return check;
 }
 
-void storeUserSignUp(name, email, password) async {
-  var user = {
-    'name': name,
-    'email': email,
-    'password': password,
-  };
+Future getFavouriteList() async {
   final prefs = await SharedPreferences.getInstance();
-  const key = 'user';
-  final value = json.encode(user);
-  prefs.setString(key, value);
+  var favouriteList = prefs.getString('favouriteList');
+  if (favouriteList != null) {
+    return json.decode(favouriteList);
+  } else {
+    return [];
+  }
 }

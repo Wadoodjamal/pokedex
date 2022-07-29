@@ -16,6 +16,7 @@ class PokemonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 10),
+      height: 180,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey[500],
