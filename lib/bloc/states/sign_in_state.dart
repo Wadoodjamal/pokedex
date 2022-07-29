@@ -1,11 +1,3 @@
-// enum of states
-enum SignIn {
-  initial,
-  isLoading,
-  isSuccess,
-  isError,
-}
-
 class SignInState {
   final String password;
   final String email;

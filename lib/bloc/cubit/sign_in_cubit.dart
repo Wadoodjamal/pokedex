@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pokedex/states/sign_in_state.dart';
-import 'package:pokedex/widgets/firebase_functions.dart';
+import 'package:pokedex/bloc/states/sign_in_state.dart';
+import 'package:pokedex/firebase_functions.dart';
 
 class SignInCubit extends Cubit<SignInState> {
   SignInCubit() : super(SignInState());

@@ -1,60 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:pokedex/bloc/cubit/sign_up_cubit.dart';
+import 'package:pokedex/bloc/states/sign_up_state.dart';
 import 'package:pokedex/screens/home.dart';
 import 'package:pokedex/screens/sign_in.dart';
-import 'package:pokedex/shared_preferences.dart';
 import 'package:pokedex/widgets/custom_text_button.dart';
 import 'package:pokedex/widgets/custom_text_field.dart';
-import 'package:pokedex/widgets/firebase_functions.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends StatelessWidget {
+  static final GlobalKey<FormBuilderState> _fbKey =
+      GlobalKey<FormBuilderState>();
+
   const SignUpScreen({Key? key}) : super(key: key);
 
-  @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
-  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
-  String name = '';
-  String email = '';
-  String password = '';
-
-  void _name(String? value) {
-    setState(() {
-      name = value!;
-    });
-  }
-
-  void _email(String? value) {
-    setState(() {
-      email = value!;
-    });
-  }
-
-  void _password(String? value) {
-    setState(() {
-      password = value!;
-    });
-  }
-
-  void _onPress() async {
-    var check = _fbKey.currentState!.validate();
-    if (check) {
-      var checkSignUp = await signUp(email, password);
-      if (checkSignUp) {
-        storeUserSignUp(name, email, password);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const HomeScreen(),
-          ),
-        );
-      } else {
-        print('Sign Up failed');
-      }
-    } else {
-      print('Form is invalid');
+  void _listeners(state, context) {
+    if (state is SignUpStateSuccess) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+    }
+    if (state is SignUpStateSwitchToSignIn) {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const SignInScreen()));
     }
   }
 
@@ -63,129 +30,165 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Image.asset(
-                  'assets/images/logo.JPG',
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
-                const SizedBox(height: 50),
-                FormBuilder(
-                  key: _fbKey,
-                  initialValue: const {
-                    'name': 'Wadood',
-                    'email': '',
-                    'password': ''
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Name',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      CustomTextField(
-                        name: 'name',
-                        type: TextInputType.name,
-                        icon: const Icon(Icons.person),
-                        onChanged: _name,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Email',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      CustomTextField(
-                        name: 'email',
-                        type: TextInputType.emailAddress,
-                        onChanged: _email,
-                        icon: const Icon(Icons.email),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Password',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      CustomTextField(
-                        name: 'password',
-                        onChanged: _password,
-                        type: TextInputType.number,
-                        icon: const Icon(Icons.password),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 60),
-                      Center(
-                          child: CustomTextButton(
-                        text: 'Sign Up',
-                        func: _onPress,
-                      )),
-                      const SizedBox(height: 10),
-                      Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SignInScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'Already have an account? Sign In.',
+        body: BlocConsumer<SignUpCubit, SignUpState>(
+          listener: (context, state) {
+            _listeners(state, context);
+          },
+          builder: (context, state) {
+            print(state);
+            if (state is SignUpStateLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.JPG',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 50),
+                    FormBuilder(
+                      key: _fbKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Name',
                             style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue[600]),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 6),
+                          _nameTextField(),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Email',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          _emailTextField(),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Password',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          _passwordTextField(),
+                          const SizedBox(height: 60),
+                          _signUpButton(),
+                          const SizedBox(height: 10),
+                          _signInText(),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _signInText() {
+    return BlocBuilder<SignUpCubit, SignUpState>(builder: (context, state) {
+      return Center(
+        child: GestureDetector(
+          onTap: () => context.read<SignUpCubit>().switchToSignIn(),
+          child: Text(
+            'Already have an account? Sign In.',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue[600],
             ),
           ),
         ),
-      ),
+      );
+    });
+  }
+
+  Widget _signUpButton() {
+    return BlocBuilder<SignUpCubit, SignUpState>(builder: (context, state) {
+      return Center(
+          child: CustomTextButton(
+        text: 'Sign Up',
+        func: () => context.read<SignUpCubit>().onPress(),
+      ));
+    });
+  }
+
+  Widget _passwordTextField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(builder: (context, state) {
+      return CustomTextField(
+        isObscure: true,
+        name: 'password',
+        type: TextInputType.number,
+        icon: const Icon(Icons.password),
+        onChanged: (value) =>
+            context.read<SignUpCubit>().passwordChanged(value),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter your password';
+          }
+          return null;
+        },
+      );
+    });
+  }
+
+  Widget _emailTextField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(builder: (context, state) {
+      return CustomTextField(
+        name: 'email',
+        type: TextInputType.emailAddress,
+        icon: const Icon(Icons.email),
+        onChanged: (value) => context.read<SignUpCubit>().emailChanged(value),
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter your email';
+          }
+          return null;
+        },
+      );
+    });
+  }
+
+  Widget _nameTextField() {
+    return BlocBuilder<SignUpCubit, SignUpState>(
+      builder: (context, state) {
+        return CustomTextField(
+          name: 'name',
+          type: TextInputType.name,
+          icon: const Icon(Icons.person),
+          onChanged: (value) => context.read<SignUpCubit>().nameChanged(value),
+          validator: (value) {
+            if (value!.isEmpty) {
+              return 'Please enter your name';
+            }
+            return null;
+          },
+        );
+      },
     );
   }
 }

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:pokedex/cubit/sign_in_cubit.dart';
+import 'package:pokedex/bloc/cubit/sign_in_cubit.dart';
+import 'package:pokedex/bloc/states/sign_in_state.dart';
 import 'package:pokedex/screens/home.dart';
 import 'package:pokedex/screens/sign_up.dart';
-import 'package:pokedex/states/sign_in_state.dart';
 import 'package:pokedex/widgets/custom_text_button.dart';
 import 'package:pokedex/widgets/custom_text_field.dart';
 
 class SignInScreen extends StatelessWidget {
-  SignInScreen({Key? key}) : super(key: key);
-  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+  const SignInScreen({Key? key}) : super(key: key);
+  static final GlobalKey<FormBuilderState> _fbKey =
+      GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
