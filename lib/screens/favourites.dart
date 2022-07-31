@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokedex/bloc/cubit/favourite_cubit.dart';
+import 'package:pokedex/bloc/cubit/home_cubit.dart';
 import 'package:pokedex/bloc/states/favourite_state.dart';
 import 'package:pokedex/widgets/pokemon_card.dart';
 
 class FavouritesScreen extends StatelessWidget {
-  const FavouritesScreen({Key? key}) : super(key: key);
+  const FavouritesScreen({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: BlocConsumer<FavouriteCubit, FavouriteState>(
-          listener: (context, state) {},
+        body: BlocBuilder<FavouriteCubit, FavouriteState>(
           builder: (context, state) {
             if (state is FavouriteStateInitial) {
               context.read<FavouriteCubit>().waitForScreenLoad();
             } else if (state is FavouritesStateLoading) {
-              context.read<FavouriteCubit>().loadingFavouritesAndPokemons();
+              context.read<FavouriteCubit>().loadingFavourite();
             }
             return Container(
               margin: const EdgeInsets.only(right: 16, left: 16, top: 30),
@@ -61,8 +63,17 @@ class FavouritesScreen extends StatelessWidget {
           mainAxisSpacing: 4,
           crossAxisCount: 2,
         ),
-        itemBuilder: (context, index) => const PokemonCard(isFavourite: true),
-        itemCount: 20,
+        itemBuilder: (context, index) => PokemonCard(
+          isFavourite: true,
+          text: BlocProvider.of<FavouriteCubit>(context)
+              .state
+              .favouriteList[index]['pokemon']['name'],
+          index: BlocProvider.of<FavouriteCubit>(context)
+              .state
+              .favouriteList[index]['index'],
+        ),
+        itemCount:
+            BlocProvider.of<HomeCubit>(context).state.favouriteList.length,
       ),
     );
   }

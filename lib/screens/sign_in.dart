@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:pokedex/bloc/cubit/nav_cubit.dart';
 import 'package:pokedex/bloc/cubit/sign_in_cubit.dart';
+import 'package:pokedex/bloc/states/nav_state.dart';
 import 'package:pokedex/bloc/states/sign_in_state.dart';
 import 'package:pokedex/screens/home.dart';
 import 'package:pokedex/screens/sign_up.dart';
@@ -13,21 +15,58 @@ class SignInScreen extends StatelessWidget {
   static final GlobalKey<FormBuilderState> _fbKey =
       GlobalKey<FormBuilderState>();
 
+  void _listeners(context, state) {
+    if (state is SignInError) {
+      _showErrorDialog(context);
+    }
+  }
+
+  void _showErrorDialog(context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: const Text('Email or password is incorrect'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: BlocProvider(
-          create: (context) => SignInCubit(),
-          child: BlocBuilder<SignInCubit, SignInState>(
+        body: BlocListener<NavCubit, NavState>(
+          listener: (context, state) {
+            if (state is NavStateSignUp) {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SignUpScreen()));
+            }
+            if (state is NavStateHome) {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()));
+            }
+          },
+          child: BlocConsumer<SignInCubit, SignInState>(
+            listener: (context, state) {
+              _listeners(context, state);
+            },
             builder: (context, state) {
               if (state is SignInLoading) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
-              } else if (state is SignInSuccess) {
-                return const HomeScreen();
+              }
+              if (state is SignInSuccess) {
+                context.read<NavCubit>().goToHome();
               }
               return Container(
                 margin:
@@ -46,10 +85,6 @@ class SignInScreen extends StatelessWidget {
                       const SizedBox(height: 70),
                       FormBuilder(
                         key: _fbKey,
-                        initialValue: const {
-                          'email': 'wadoodjamal54@gmail.com',
-                          'password': '12345678',
-                        },
                         onChanged: () {
                           _fbKey.currentState!.save();
                         },
@@ -80,26 +115,7 @@ class SignInScreen extends StatelessWidget {
                             const SizedBox(height: 80),
                             _submitButton(),
                             const SizedBox(height: 10),
-                            Center(
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SignUpScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Don\'t have an account? Sign up.',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.blue[600]),
-                                ),
-                              ),
-                            ),
+                            _signUpText(context),
                           ],
                         ),
                       ),
@@ -114,6 +130,27 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
+  Widget _signUpText(BuildContext context) {
+    return BlocBuilder<NavCubit, NavState>(
+      builder: (context, state) {
+        return Center(
+          child: GestureDetector(
+            onTap: () => {
+              context.read<NavCubit>().goToSignUp(),
+            },
+            child: Text(
+              'Don\'t have an account? Sign up.',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue[600]),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _submitButton() {
     return BlocBuilder<SignInCubit, SignInState>(
       builder: (context, state) {
@@ -121,7 +158,9 @@ class SignInScreen extends StatelessWidget {
             child: CustomTextButton(
           text: 'Sign In',
           func: () {
-            context.read<SignInCubit>().onPress();
+            if (_fbKey.currentState!.validate()) {
+              context.read<SignInCubit>().onPress();
+            }
           },
         ));
       },
@@ -138,13 +177,9 @@ class SignInScreen extends StatelessWidget {
           name: 'password',
           onChanged: context.read<SignInCubit>().passwordChanged,
           validator: (value) {
-            if (value!.isEmpty) {
-              return 'Please enter your password';
-            }
-            if (value == '12345678') {
-              return 'Please enter your password';
-            }
-            return null;
+            return context.read<SignInCubit>().state.passwordIsValid
+                ? null
+                : 'Password must be at least 8 characters long';
           },
         );
       },
@@ -160,12 +195,9 @@ class SignInScreen extends StatelessWidget {
           name: 'email',
           onChanged: context.read<SignInCubit>().emailChanged,
           validator: (value) {
-            if (value! == 'wadoodjamal54@gmail.com') {
-              return 'Please enter your email';
-            } else if (value.isEmpty) {
-              return 'Please enter your email';
-            }
-            return null;
+            return context.read<SignInCubit>().state.emailIsValid
+                ? null
+                : 'Email must contain @ and .';
           },
         );
       },

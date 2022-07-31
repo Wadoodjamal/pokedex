@@ -45,11 +45,19 @@ Future<bool> getUser() async {
   return check;
 }
 
+void storeFavourite(List<dynamic> favourites) async {
+  final prefs = await SharedPreferences.getInstance();
+  const key = 'favourite';
+  final value = json.encode(favourites);
+  prefs.setString(key, value);
+}
+
 Future getFavouriteList() async {
   final prefs = await SharedPreferences.getInstance();
-  var favouriteList = prefs.getString('favouriteList');
-  if (favouriteList != null) {
-    return json.decode(favouriteList);
+  var data = prefs.getString('favourite');
+  if (data != null) {
+    var jsonData = json.decode(data);
+    return jsonData;
   } else {
     return [];
   }

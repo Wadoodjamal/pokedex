@@ -6,10 +6,12 @@ class PokemonCard extends StatelessWidget {
     this.isFavourite = false,
     this.text,
     this.index = 1,
+    this.func,
   }) : super(key: key);
 
   final bool isFavourite;
   final String? text;
+  final Function()? func;
   final int index;
 
   @override
@@ -17,6 +19,7 @@ class PokemonCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(right: 10),
       height: 180,
+      width: 155,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey[500],
@@ -31,21 +34,24 @@ class PokemonCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            width: 140,
+            width: 150,
             child: ListTile(
-              visualDensity: const VisualDensity(vertical: -4),
+              visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
               title: Text(
-                text ?? 'Bulbusar',
+                text?.toUpperCase() ?? 'Bulbusar'.toUpperCase(),
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
-              trailing: Icon(
-                isFavourite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
-                size: 20,
+              trailing: GestureDetector(
+                onTap: func,
+                child: Icon(
+                  isFavourite ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),

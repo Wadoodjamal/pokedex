@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokedex/bloc/states/favourite_state.dart';
+import 'package:pokedex/shared_preferences.dart';
 
 class FavouriteCubit extends Cubit<FavouriteState> {
   FavouriteCubit() : super(const FavouriteStateInitial());
@@ -9,11 +10,12 @@ class FavouriteCubit extends Cubit<FavouriteState> {
     emit(const FavouritesStateLoading());
   }
 
-  Future<void> loadingFavouritesAndPokemons() async {
-    loadedState();
+  Future<void> loadingFavourite() async {
+    var favouriteList = await getFavouriteList();
+    loadedState(favouriteList: favouriteList);
   }
 
-  void loadedState() {
-    emit(const FavouritesStateLoaded());
+  void loadedState({List<dynamic>? favouriteList}) {
+    emit(FavouritesStateLoaded(favouriteList: favouriteList));
   }
 }

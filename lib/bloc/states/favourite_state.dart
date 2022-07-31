@@ -1,5 +1,7 @@
 class FavouriteState {
-  const FavouriteState();
+  final List<dynamic> favouriteList;
+
+  const FavouriteState({this.favouriteList = const []});
 }
 
 class FavouriteStateInitial extends FavouriteState {
@@ -11,5 +13,6 @@ class FavouritesStateLoading extends FavouriteState {
 }
 
 class FavouritesStateLoaded extends FavouriteState {
-  const FavouritesStateLoaded();
+  FavouritesStateLoaded({List<dynamic>? favouriteList})
+      : super(favouriteList: favouriteList ?? []);
 }

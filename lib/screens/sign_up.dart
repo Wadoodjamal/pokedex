@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:pokedex/bloc/cubit/nav_cubit.dart';
 import 'package:pokedex/bloc/cubit/sign_up_cubit.dart';
+import 'package:pokedex/bloc/states/nav_state.dart';
 import 'package:pokedex/bloc/states/sign_up_state.dart';
 import 'package:pokedex/screens/home.dart';
 import 'package:pokedex/screens/sign_in.dart';
@@ -9,7 +11,7 @@ import 'package:pokedex/widgets/custom_text_button.dart';
 import 'package:pokedex/widgets/custom_text_field.dart';
 
 class SignUpScreen extends StatelessWidget {
-  static final GlobalKey<FormBuilderState> _fbKey =
+  static final GlobalKey<FormBuilderState> _fbKey2 =
       GlobalKey<FormBuilderState>();
 
   const SignUpScreen({Key? key}) : super(key: key);
@@ -18,10 +20,6 @@ class SignUpScreen extends StatelessWidget {
     if (state is SignUpStateSuccess) {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-    }
-    if (state is SignUpStateSwitchToSignIn) {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const SignInScreen()));
     }
   }
 
@@ -35,7 +33,6 @@ class SignUpScreen extends StatelessWidget {
             _listeners(state, context);
           },
           builder: (context, state) {
-            print(state);
             if (state is SignUpStateLoading) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -56,7 +53,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 50),
                     FormBuilder(
-                      key: _fbKey,
+                      key: _fbKey2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -110,10 +107,17 @@ class SignUpScreen extends StatelessWidget {
   }
 
   Widget _signInText() {
-    return BlocBuilder<SignUpCubit, SignUpState>(builder: (context, state) {
+    return BlocConsumer<NavCubit, NavState>(listener: (context, state) {
+      if (state is NavStateSignIn) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const SignInScreen()));
+      }
+    }, builder: (context, state) {
       return Center(
         child: GestureDetector(
-          onTap: () => context.read<SignUpCubit>().switchToSignIn(),
+          onTap: () => {
+            context.read<NavCubit>().goToSignIn(),
+          },
           child: Text(
             'Already have an account? Sign In.',
             style: TextStyle(

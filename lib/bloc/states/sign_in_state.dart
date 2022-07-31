@@ -1,6 +1,9 @@
 class SignInState {
   final String password;
+  bool get passwordIsValid => password.length > 7;
+
   final String email;
+  bool get emailIsValid => email.contains('@');
 
   SignInState({
     this.password = '',
@@ -19,7 +22,8 @@ class SignInState {
 }
 
 class SignInLoading extends SignInState {
-  SignInLoading() : super();
+  SignInLoading({String? email, String? password})
+      : super(email: email!, password: password!);
 }
 
 class SignInSuccess extends SignInState {}
