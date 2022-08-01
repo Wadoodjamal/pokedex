@@ -1,7 +1,10 @@
 class SignUpState {
   final String name;
+  bool get isNameValid => name.length > 3;
   final String password;
+  bool get isPasswordValid => password.length > 7;
   final String email;
+  bool get isEmailValid => email.contains('@');
 
   SignUpState({
     this.name = '',
@@ -37,8 +40,4 @@ class SignUpStateSuccess extends SignUpState {
 
 class SignUpStateFailure extends SignUpState {
   SignUpStateFailure() : super();
-}
-
-class SignUpStateSwitchToSignIn extends SignUpState {
-  SignUpStateSwitchToSignIn() : super();
 }

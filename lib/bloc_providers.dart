@@ -31,7 +31,7 @@ class BlocProviders extends StatelessWidget {
         ),
         BlocProvider<SignUpCubit>(
           create: (_) => SignUpCubit(),
-          child: const SignUpScreen(),
+          child: SignUpScreen(),
         ),
         BlocProvider<HomeCubit>(
           create: (_) => HomeCubit(),

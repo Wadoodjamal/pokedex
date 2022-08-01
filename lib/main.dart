@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pokedex/bloc_providers.dart';
-import 'package:pokedex/screens/splash.dart';
+import 'package:pokedex/screens/sign_up.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: const Color.fromARGB(255, 93, 95, 125),
       ),
-      home: const SplashScreen(),
+      home: SignUpScreen(),
     );
   }
 }

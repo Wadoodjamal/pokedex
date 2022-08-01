@@ -11,16 +11,30 @@ import 'package:pokedex/widgets/custom_text_button.dart';
 import 'package:pokedex/widgets/custom_text_field.dart';
 
 class SignUpScreen extends StatelessWidget {
-  static final GlobalKey<FormBuilderState> _fbKey2 =
-      GlobalKey<FormBuilderState>();
+  final GlobalKey<FormBuilderState> _fbKey2 = GlobalKey<FormBuilderState>();
 
-  const SignUpScreen({Key? key}) : super(key: key);
+  SignUpScreen({Key? key}) : super(key: key);
 
-  void _listeners(state, context) {
-    if (state is SignUpStateSuccess) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+  void _listeners(context, state) {
+    if (state is SignUpStateFailure) {
+      _showErrorDialog(context);
     }
+  }
+
+  void _showErrorDialog(context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: const Text('Email is already in use.'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () => Navigator.pop(context),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -28,79 +42,91 @@ class SignUpScreen extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: BlocConsumer<SignUpCubit, SignUpState>(
+        body: BlocListener<NavCubit, NavState>(
           listener: (context, state) {
-            _listeners(state, context);
-          },
-          builder: (context, state) {
-            if (state is SignUpStateLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+            if (state is NavStateHome) {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()));
             }
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.JPG',
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                    const SizedBox(height: 50),
-                    FormBuilder(
-                      key: _fbKey2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Name',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _nameTextField(),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Email',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _emailTextField(),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Password',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _passwordTextField(),
-                          const SizedBox(height: 60),
-                          _signUpButton(),
-                          const SizedBox(height: 10),
-                          _signInText(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
           },
+          child: BlocConsumer<SignUpCubit, SignUpState>(
+            listener: (context, state) {
+              _listeners(context, state);
+            },
+            builder: (context, state) {
+              if (state is SignUpStateLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (state is SignUpStateSuccess) {
+                context.read<NavCubit>().goToHome();
+              }
+              return Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo.JPG',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 50),
+                      FormBuilder(
+                        key: _fbKey2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Name',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            _nameTextField(),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Email',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            _emailTextField(),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Password',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            _passwordTextField(),
+                            const SizedBox(height: 60),
+                            _signUpButton(),
+                            const SizedBox(height: 10),
+                            _signInText(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -136,7 +162,11 @@ class SignUpScreen extends StatelessWidget {
       return Center(
           child: CustomTextButton(
         text: 'Sign Up',
-        func: () => context.read<SignUpCubit>().onPress(),
+        func: () {
+          if (_fbKey2.currentState!.validate()) {
+            context.read<SignUpCubit>().onPress();
+          }
+        },
       ));
     });
   }
@@ -151,10 +181,9 @@ class SignUpScreen extends StatelessWidget {
         onChanged: (value) =>
             context.read<SignUpCubit>().passwordChanged(value),
         validator: (value) {
-          if (value!.isEmpty) {
-            return 'Please enter your password';
-          }
-          return null;
+          return context.read<SignUpCubit>().state.isPasswordValid
+              ? null
+              : 'Password should be at least 6 characters';
         },
       );
     });
@@ -168,10 +197,9 @@ class SignUpScreen extends StatelessWidget {
         icon: const Icon(Icons.email),
         onChanged: (value) => context.read<SignUpCubit>().emailChanged(value),
         validator: (value) {
-          if (value!.isEmpty) {
-            return 'Please enter your email';
-          }
-          return null;
+          return context.read<SignUpCubit>().state.isEmailValid
+              ? null
+              : 'Please enter a valid email';
         },
       );
     });
@@ -186,10 +214,9 @@ class SignUpScreen extends StatelessWidget {
           icon: const Icon(Icons.person),
           onChanged: (value) => context.read<SignUpCubit>().nameChanged(value),
           validator: (value) {
-            if (value!.isEmpty) {
-              return 'Please enter your name';
-            }
-            return null;
+            return context.read<SignUpCubit>().state.isNameValid
+                ? null
+                : 'Please enter a valid name';
           },
         );
       },

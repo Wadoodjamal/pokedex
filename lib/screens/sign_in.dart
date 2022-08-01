@@ -45,10 +45,8 @@ class SignInScreen extends StatelessWidget {
         body: BlocListener<NavCubit, NavState>(
           listener: (context, state) {
             if (state is NavStateSignUp) {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const SignUpScreen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => SignUpScreen()));
             }
             if (state is NavStateHome) {
               Navigator.pushReplacement(context,
